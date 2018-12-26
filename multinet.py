@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.pylab as plt
 
 # ダミーデータ作成
-#train = np.random.rand(100, 784, 10, 10)
+# train = np.random.rand(100, 784, 10, 10)
 
 
 def read_data():
@@ -21,30 +21,28 @@ def read_data():
 def main():
     train_img, train_label, test_img, test_label = read_data()
     net = multiLayerNet(input_num=784, hidden_num_list=[
-                        100, 100, 100], out_num=10, initial_weight=0.001)
+                        100, 100, 100], out_num=10, initial_weight=1)
     iterations = 10000
     train_num = train_img.shape[0]
     batch_num = 5000
     eta = 0.1
-    print("hi")
     err_list = []
     accuracy_list = []
-    #sgeneralization_list = []
+    # sgeneralization_list = []
     for i in range(iterations):
+        #net.params['w1'].shape  (784,100)
+        # net.params
         # 1epochあたりの最大の繰りかえし数
-        #iter_per_epoch = max(train_num / batch_num, 1)
+        # iter_per_epoch = max(train_num / batch_num, 1)
         batch_id = np.random.choice(train_num, batch_num)
         train_batch = train_img[batch_id]
         answer_batch = train_label[batch_id]
-        print(net.layers['linear1'].W)
         # 4層の順伝播を計算
         y = predict(train_batch, net)
 
         # 誤差逆で勾配
-        print(net.layers['linear1'].W)
         bpropf, net = back_prop(y, answer_batch, net)
-        print(net.layers['linear1'].W)
-        #net.params = update_params(bpropf, net.params, eta)
+        # net.params = update_params(bpropf, net.params, eta)
 
         # errorの記録
         error = square_error(y, answer_batch)
@@ -53,7 +51,7 @@ def main():
         # 認識精度
         accuracy = accuracy_rate(y, answer_batch)
         print(accuracy)
-        #accuracy_list = accuracy_list.append(accuracy)
+        # accuracy_list = accuracy_list.append(accuracy)
     x = np.arange(10000)
     plt.plot(x, err_list)
     plt.ylim(0, 1.0)

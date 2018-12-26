@@ -22,25 +22,35 @@ def accuracy_rate(u, t):
 def back_prop(y, t, net):
     eta = 0.1
     grads = {}
-    dy = 1
-    dy = net.final_layer.backward(dy, t)
+    dy = net.final_layer.backward(t)
+    print('dy')
+    print(dy)
     back_layers = list(net.layers.values())
     back_layers.reverse()
     linear_num = 1
     for layer in back_layers:
         dy = layer.backward(dy)
+
         if layer in (net.layers['linear1'], net.layers['linear2'], net.layers['linear3'], net.layers['linear4']):
               # wx+bの場合は隠れ関数の教会なのでW,Bの勾配を求める
             grads['w' + str(linear_num)] = layer.dW
             grads['b' + str(linear_num)] = layer.dB
+            # print("before")
+            # print(layer.W[0])
+            # print(layer.dW[0])
             layer.W -= eta*layer.dW
-            layer.B -= eta*layer.dB
+            layer.B -= eta * layer.dB  # バッチ数でわる
+            # print("after")
+            # print(layer.W[0])
+            # print("hoge")
             linear_num += 1
     #params[param] -= eta * gradient[param]
     return grads, net
 
 
 # 重みの更新はMomemtunとかで書き換える
+
+
 def update_params(gradient, params, eta):
     for param in params.keys():
         params[param] -= eta * gradient[param]

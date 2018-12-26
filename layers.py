@@ -84,10 +84,12 @@ class softmax:
         self.y = self.softmax(y)
         return self.y
 
-    def backward(self, du, t):
+    def backward(self, t):
         batch_num = t.shape[0]
         if t.size == self.y.size:  # 教師データがone-hot-vectorのとき
-            du_x = (self.y - t) / batch_num  # データ一個あたりの誤差
+            du_x = (self.y - t) / batch_num
+            print(du_x, end=" isc Y")
+            # データ一個あたりの誤差
         else:
             du_x = self.y.copy()
             du_x[np.arange(batch_num), t] -= 1
