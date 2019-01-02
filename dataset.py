@@ -69,7 +69,7 @@ def to_simple_one_label(X):
     return T
 
 
-def load_data(normalize=True, flatten=True, one_label=True):
+def load_data(flatten, normalize=True, one_label=True):
     """
     Parameters
     ----------

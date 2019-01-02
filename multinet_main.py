@@ -14,7 +14,7 @@ import matplotlib.pylab as plt
 
 def read_data():
     train_img, train_label, test_img, test_label = load_data(
-        normalize=True, flatten=True, one_label=True)
+        flatten=True, normalize=True, one_label=True)
     return train_img, train_label, test_img, test_label
 
 
@@ -51,15 +51,15 @@ def main():
         err_list.append(error)
 
         # 認識精度
-        accuracy = accuracy_rate(y, answer_batch)
-        print("訓練データに対する正解率", accuracy)
+        train_accuracy = accuracy_rate(y, answer_batch)
+        print("訓練データに対する正解率", train_accuracy)
         # accuracy_list = accuracy_list.append(accuracy)
 
     # テストデータの正解率
     #correct_list = []
     data_prediction = predict(test_img, net)
-    correct_rate = accuracy_rate(data_prediction, test_label)
-    print("testに対する正解率", correct_rate)
+    test_accuracy = accuracy_rate(data_prediction, test_label)
+    print("testに対する正解率", test_accuracy)
 
     x = np.arange(100)
     plt.plot(x, err_list)

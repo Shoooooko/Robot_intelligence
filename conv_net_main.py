@@ -2,7 +2,7 @@
 # https://qiita.com/nvtomo1029/items/601af18f82d8ffab551e
 # https: // qiita.com/nvtomo1029/items/601af18f82d8ffab551e
 # https://qiita.com/ta-ka/items/1c588dd0559d1aad9921
-
+# https://qiita.com/icoxfog417/items/5fd55fad152231d706c2
 
 import sys
 # sys.path.append(os.pardir)
@@ -21,7 +21,7 @@ import matplotlib.pylab as plt
 def read_data():
     print("data")
     train_img, train_label, test_img, test_label = load_data(
-        normalize=True, flatten=True, one_label=True)
+        flatten=False, normalize=True, one_label=True)
     return train_img, train_label, test_img, test_label
 
 
@@ -29,13 +29,19 @@ def main():
     train_img, train_label, test_img, test_label = read_data()
     print("hoge")
     net = ConvNet(0.1, input_dim=(1, 28, 28),
-                  conv_param={'filter_num': 30,
+                  conv_param={'filter_num': 16,
                               'filter_size': 5, 'pad': 0, 'stride': 1},
-                  hidden_num_list=[100, 100], output_num=10)
+                  hidden_num_list=[100, 100], out_num=10)
     print("net is created")
     iterations = 10000
     train_num = train_img.shape[0]
     batch_num = 5000
+    dammy_test_img = test_img.flatten()
+    dammy_test_img_num = len(dammy_test_img)
+    random_ids = [np.random.randint(0, dammy_test_img_num) for i in range(
+        int(1/4*dammy_test_img_num))]  # 1/4をd%に合わせてd/100とする
+    for i in random_ids:
+        dammy_test_img[i] = np.random.random()
     eta = 0.1
     err_list = []
     accuracy_list = []
@@ -49,50 +55,46 @@ def main():
         y = predict(train_batch, net)
         print("predicted!")
 
-##################
-    #     # 誤差逆で勾配
-    #     bpropf, net = back_prop(y, answer_batch, net)
-    #     # net.params = update_params(bpropf, net.params, eta)
+        # errorの記録
+        error = square_error(y, answer_batch)
+        # error = cross_error(y, answer_batch)
+        err_list.append(error)
 
-    #     # errorの記録
-    #     error = square_error(y, answer_batch)
-    #     #error = cross_error(y, answer_batch)
-    #     err_list.append(error)
+        # 誤差逆で勾配
+        bpropf, net = back_prop(y, answer_batch, net)
+        net.params = update_params(bpropf, net.params, eta)
 
-    #     # 認識精度
-    #     accuracy = accuracy_rate(y, answer_batch)
-    #     print("訓練データに対する正解率", accuracy)
-    #     # accuracy_list = accuracy_list.append(accuracy)
+        # 認識精度
+        train_accuracy = accuracy_rate(y, answer_batch)
+        print("訓練データに対する正解率", train_accuracy)
+        # accuracy_list = accuracy_list.append(accuracy)
 
-    # # 認識(推論)を行う
+    # テストデータの正解率
+    # correct_list = []
+    data_prediction = predict(test_img, net)
+    test_accuracy = accuracy_rate(data_prediction, test_label)
+    print("testに対する正解率", test_accuracy)
 
-    # def predict(self, x):
-    #     for layer in self.layers.values():
-    #         x = layer.forward(x)
+    # dummyでの性能
+    dummy_prediction = predict(dammy_test_img, net)
+    dummy_accuracy = accuracy_rate(dummy_prediction, test_label)
+    print("testに対する正解率", dummy_accuracy)
 
-    #     return x
+    x = np.arange(100)
+    plt.plot(x, err_list)
+    # plt.ylim(0, 1.0)
+    plt.xlabel('epoch')
+    plt.ylabel('error')
+    plt.show()
 
-    # # 損失関数の値を求める
-    # # x:入力データ, t:教師データ
-    # def loss(self, x, t):
-    #     y = self.predict(x)
-    #     return self.last_layer.forward(y, t)
 
-    # # 認識精度を求める
-    # def accuracy(self, x, t, batch_size=100):
-    #     if t.ndim != 1:
-    #         t = np.argmax(t, axis=1)
+if __name__ == '__main__':
+    main()
 
-    #     acc = 0.0
-
-    #     for i in range(int(x.shape[0] / batch_size)):
-    #         tx = x[i*batch_size:(i+1)*batch_size]
-    #         tt = t[i*batch_size:(i+1)*batch_size]
-    #         y = self.predict(tx)
-    #         y = np.argmax(y, axis=1)
-    #         acc += np.sum(y == tt)
-
-    #     return acc / x.shape[0]
+    # 認識精度
+    accuracy = accuracy_rate(y, answer_batch)
+    print("訓練データに対する正解率", accuracy)
+    accuracy_list = accuracy_list.append(accuracy)
 
     # # 重みパラメータに対する勾配を求める(誤差逆伝搬法)
     # # x:入力データ, t:教師データ
@@ -106,23 +108,6 @@ def main():
     #     """
     #     # forward(順伝播)
     #     self.loss(x, t)
-
-    #     # backward(逆伝播)
-    #     dout = 1
-    #     dout = self.last_layer.backward(dout)
-
-    #     layers = list(self.layers.values())
-    #     layers.reverse()
-    #     for layer in layers:
-    #         dout = layer.backward(dout)
-
-    #     # 求められた勾配値を設定
-    #     grads = {}
-    #     grads['W1'], grads['b1'] = self.layers['Conv1'].dW, self.layers['Conv1'].db
-    #     grads['W2'], grads['b2'] = self.layers['Affine1'].dW, self.layers['Affine1'].db
-    #     grads['W3'], grads['b3'] = self.layers['Affine2'].dW, self.layers['Affine2'].db
-
-    #     return grads
 
     # # パラメータ(重み、バイアス)をファイルに保存する
     # def save_params(self, file_name="params.pkl"):

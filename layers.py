@@ -3,6 +3,7 @@
 # del_u/del_w=x
 # w_new=w_old-eta*grad*xだがbackwordでは出力層からgradの連鎖を求める
 import numpy as np
+from method import *
 
 
 class relu:
@@ -49,6 +50,7 @@ class linear:
 
     def forward(self, x):
         self.x = x
+        x=x.reshape(-1,self.W.shape[0])
         u = np.dot(x, self.W) + self.B
         return u
     # BP
@@ -88,7 +90,7 @@ class softmax:
         batch_num = t.shape[0]
         if t.size == self.y.size:  # 教師データがone-hot-vectorのとき
             du_x = (self.y - t) / batch_num
-            print(du_x, end=" isc Y")
+            #print(du_x, end=" isc Y")
             # データ一個あたりの誤差
         else:
             du_x = self.y.copy()
@@ -96,3 +98,103 @@ class softmax:
             du_x = du_x / batch_num
 
         return du_x
+
+
+class Convolution:
+
+    def __init__(self, W, B, stride=1, pad=0):
+        self.W = W
+        self.B = B
+        self.stride = stride
+        self.pad = pad
+
+        # 中間データ（backward時に使用）
+        self.x = None
+        self.map = None
+        self.map_W = None
+
+        # 重み・バイアスパラメータの勾配
+        self.dW = None
+        self.db = None
+
+    def forward(self, x):
+        # filterの個数:filter_num、チャネル数:C、高さ:filter_h、幅:filter_w
+        filter_num, C, filter_h, filter_w = self.W.shape
+        # input_dataの個数:N、チャネル数:C、高さ:H、幅:W                                                                                                                                N, C, filter_h, filter_w = self.W.shape
+        N, C, in_h, in_w = x.shape
+        # output_dataの高さ、幅
+        out_h = int((in_h + 2*self.pad - filter_h) / self.stride)+1
+        out_w = int((in_w + 2*self.pad - filter_w) / self.stride)+1
+        # input_dataを2次元配列に展開
+        map_x = map_2d_forward(x, filter_h, filter_w, self.stride, self.pad)
+        # filterを2次元配列に展開
+        map_W = self.W.reshape(filter_num, -1).T
+        # out_put
+        out = np.dot(map_x, map_W) + self.B
+        out = out.reshape(N, out_h, out_w, -1).transpose(0, 3, 1, 2)
+
+        self.x = x  # input_data
+        self.map = map_x  # input_data(to 2次元)
+        self.map_W = map_W  # filter_data(to 2次元)
+        print("done")
+        return out
+
+    def backward(self, dout):
+        filter_num, C, filter_h, filter_w = self.W.shape
+        dout = dout.transpose(0, 2, 3, 1).reshape(-1, filter_num)
+
+        self.dB = np.sum(dout, axis=0)  # ブロードキャスト
+        self.dW = np.dot(self.map.T, dout)
+        self.dW = self.dW.transpose(1, 0).reshape(
+            filter_num, C, filter_h, filter_w)
+
+        dmap = np.dot(dout, self.map_W.T)
+        d_x = map_2d_back(dmap, self.x.shape, filter_h,
+                          filter_w, self.stride, self.pad)
+
+        return d_x
+
+
+class Pooling:
+    def __init__(self, pool_h, pool_w, stride=1, pad=0):
+        self.pool_h = pool_h
+        self.pool_w = pool_w
+        self.stride = stride
+        self.pad = pad
+
+        self.x = None
+        self.arg_max = None
+
+    def forward(self, x):
+        N, C, H, W = x.shape
+        out_h = int((H - self.pool_h) / self.stride + 1)
+        out_w = int((W - self.pool_w) / self.stride+1)
+        # input_dataをpooling適用領域に2次元展開
+        map_x = map_2d_forward(
+            x, self.pool_h, self.pool_w, self.stride, self.pad)
+        map_x = map_x.reshape(-1, self.pool_h*self.pool_w)
+        # map_xの各行に対してmax_pooling
+        arg_max = np.argmax(map_x, axis=1)
+        out = np.max(map_x, axis=1)
+        out = out.reshape(N, out_h, out_w, C).transpose(0, 3, 1, 2)
+
+        self.x = x
+        self.arg_max = arg_max
+
+        return out
+
+    def backward(self, dout):
+        dout = dout.transpose(0, 2, 3, 1)
+
+        pool_size = self.pool_h * self.pool_w
+        dmax = np.zeros((dout.size, pool_size))
+        # 1次元配列にする(flatten)
+        dmax[np.arange(self.arg_max.size),
+             self.arg_max.flatten()] = dout.flatten()
+        dmax = dmax.reshape(dout.shape + (pool_size,))
+        dmap_x = dmax.reshape(
+            dmax.shape[0] * dmax.shape[1] * dmax.shape[2], -1)
+        dx = map_2d_back(dmap_x, self.x.shape, self.pool_h,
+                         self.pool_w, self.stride, self.pad)
+
+        return dx
