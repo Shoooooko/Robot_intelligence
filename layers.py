@@ -52,7 +52,7 @@ class linear:
     def forward(self, x):
         self.x = x
         print(self.W.shape[0])
-        x=x.reshape(-1,256)
+        x=np.reshape(x,(5000,256))
         print(x.shape)
         u = np.dot(x, self.W) + self.B
         return u
