@@ -12,6 +12,7 @@ class relu:
 
     def forward(self, x):
         u = x.copy()
+        print(x.shape)
         # x>0->false,x<=0->trueとして各要素の情報を保存
         self.flag = (x <= 0)
         u[self.flag] = 0
@@ -50,7 +51,9 @@ class linear:
 
     def forward(self, x):
         self.x = x
-        x=x.reshape(-1,self.W.shape[0])
+        print(self.W.shape[0])
+        x=x.reshape(-1,256)
+        print(x.shape)
         u = np.dot(x, self.W) + self.B
         return u
     # BP

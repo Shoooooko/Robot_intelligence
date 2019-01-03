@@ -4,7 +4,6 @@ import numpy as np
 
 def predict(x, net):
     for layer in net.layers.values():
-        print(layer)
         x = layer.forward(x)
         print(x.shape)
     return net.final_layer.forward(x)
