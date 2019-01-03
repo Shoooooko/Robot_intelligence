@@ -12,7 +12,6 @@ class relu:
 
     def forward(self, x):
         u = x.copy()
-        print(x.shape)
         # x>0->false,x<=0->trueとして各要素の情報を保存
         self.flag = (x <= 0)
         u[self.flag] = 0
@@ -51,9 +50,8 @@ class linear:
 
     def forward(self, x):
         self.x = x
-        print(self.W.shape[0])
-        x=np.reshape(x,(5000,256))
-        print(x.shape)
+        if x.ndim != 2:
+            x = x.reshape(-1, x.shape[1]*x.shape[2]*x.shape[3])
         u = np.dot(x, self.W) + self.B
         return u
     # BP
@@ -63,6 +61,8 @@ class linear:
         eta = 0.01
         du_x = np.dot(du, self.W.T)
         self.dW = np.dot(self.x.T, du)
+        if self.dW.ndim != 2:
+            self.dW = self.dW.reshape(-1, self.dW.shape[-1])
         # Bはブロードキャストによって各行全てに影響をもつ、よってまとめる時は和をとる
         self.dB = np.sum(du, axis=0)
         du_x = du_x.reshape(self.x.shape)  # (100.784)
@@ -139,17 +139,18 @@ class Convolution:
         self.x = x  # input_data
         self.map = map_x  # input_data(to 2次元)
         self.map_W = map_W  # filter_data(to 2次元)
-        print("done")
         return out
 
     def backward(self, dout):
         filter_num, C, filter_h, filter_w = self.W.shape
         dout = dout.transpose(0, 2, 3, 1).reshape(-1, filter_num)
 
-        self.dB = np.sum(dout, axis=0)  # ブロードキャスト
+        self.dB = np.sum(dout, axis=0)  # ブロードキャスト#(16,)
         self.dW = np.dot(self.map.T, dout)
+        # 元の4次元になおす
         self.dW = self.dW.transpose(1, 0).reshape(
-            filter_num, C, filter_h, filter_w)
+            self.W.shape)  # conv1: (16,1,5,5),conv2: (16,16,5,5)
+        # .reshape(filter_num, C, filter_h, filter_w)
 
         dmap = np.dot(dout, self.map_W.T)
         d_x = map_2d_back(dmap, self.x.shape, filter_h,
@@ -180,7 +181,6 @@ class Pooling:
         arg_max = np.argmax(map_x, axis=1)
         out = np.max(map_x, axis=1)
         out = out.reshape(N, out_h, out_w, C).transpose(0, 3, 1, 2)
-
         self.x = x
         self.arg_max = arg_max
 

@@ -27,12 +27,10 @@ def read_data():
 
 def main():
     train_img, train_label, test_img, test_label = read_data()
-    print("hoge")
     net = ConvNet(0.1, input_dim=(1, 28, 28),
                   conv_param={'filter_num': 16,
                               'filter_size': 5, 'pad': 0, 'stride': 1},
                   hidden_num_list=[100, 100], out_num=10)
-    print("net is created")
     iterations = 10000
     train_num = train_img.shape[0]
     batch_num = 5000

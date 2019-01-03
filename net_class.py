@@ -103,7 +103,7 @@ class ConvNet:
             0, initial_weight, [pool_out_size[1], hidden_num_list[0]])
         self.params['w4'] = np.random.normal(
             0, initial_weight, [hidden_num_list[0], hidden_num_list[1]])
-        self.params['w4'] = np.random.normal(
+        self.params['w5'] = np.random.normal(
             0, initial_weight, [hidden_num_list[1], out_num])
         self.params['b1'] = np.zeros(filter_num)
         self.params['b2'] = np.zeros(filter_num)
@@ -125,6 +125,8 @@ class ConvNet:
         self.layers['linear1'] = linear(self.params['w3'], self.params['b3'])
         self.layers['relu3'] = relu()
         self.layers['linear2'] = linear(self.params['w4'], self.params['b4'])
+        self.layers['relu4'] = relu()
+        self.layers['linear3'] = linear(self.params['w5'], self.params['b5'])
 
         self.final_layer = softmax()
 

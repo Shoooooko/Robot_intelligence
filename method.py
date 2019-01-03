@@ -1,11 +1,9 @@
-
 import numpy as np
 
 
 def predict(x, net):
     for layer in net.layers.values():
         x = layer.forward(x)
-        print(x.shape)
     return net.final_layer.forward(x)
 
 # 分類の確率がmaxになるところのみしかtestと比較しないので,
@@ -32,7 +30,7 @@ def back_prop(i, t, net, decay_param=0.1):
     weight_decay = 0
     for layer in back_layers:
         dy = layer.backward(dy)
-        if layer in (net.layers['linear1'], net.layers['linear2'], net.layers['conv1'], net.layers['conv2']):
+        if layer in (net.layers['linear1'], net.layers['linear2'], net.layers['linear3'], net.layers['conv1'], net.layers['conv2']):
               # wx+bの場合は隠れ関数の教会なのでW,Bの勾配を求める
             grads['w' + str(linear_num)] = layer.dW
             grads['b' + str(linear_num)] = layer.dB
@@ -40,7 +38,6 @@ def back_prop(i, t, net, decay_param=0.1):
             layer.W -= eta*layer.dW + weight_decay
             layer.B -= eta * layer.dB  # バッチ数でわる
             linear_num += 1
-    #params[param] -= eta * gradient[param]
     return grads, net
 
 
