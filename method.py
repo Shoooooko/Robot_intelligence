@@ -57,8 +57,7 @@ def cross_error(i, t):
     # 教師データがone-hot-の場合、正解ラベルのインデックスに変換
     if t.size == i.size:
         t = t.argmax(axis=1)
-    #batch_num = i.shape[0]
-    batch_num = 5000
+    batch_num = i.shape[0]
     return - np.sum(np.log(i[np.arange(batch_num), t] + 1e-7)) / batch_num
 
 

@@ -124,7 +124,6 @@ class Convolution:
         # filterの個数:filter_num、チャネル数:C、高さ:filter_h、幅:filter_w
         filter_num, C, filter_h, filter_w = self.W.shape
         # input_dataの個数:N、チャネル数:C、高さ:H、幅:W                                                                                                                                N, C, filter_h, filter_w = self.W.shape
-        print(x.shape)
         N, C, in_h, in_w = x.shape
         # output_dataの高さ、幅
         out_h = int((in_h + 2*self.pad - filter_h) / self.stride)+1

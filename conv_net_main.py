@@ -3,7 +3,7 @@
 # https: // qiita.com/nvtomo1029/items/601af18f82d8ffab551e
 # https://qiita.com/ta-ka/items/1c588dd0559d1aad9921
 # https://qiita.com/icoxfog417/items/5fd55fad152231d706c2
-
+# https://qiita.com/yakof11/items/7c27ae617651e76f03ca
 import sys
 # sys.path.append(os.pardir)
 import os
@@ -29,22 +29,24 @@ def main():
                   hidden_num_list=[100, 100], out_num=10)
     epoch = np.arange(10)
     iterations = 10000
+    #######
+    train_img = train_img[:5000]
+    train_label = train_label[:5000]
     train_num = train_img.shape[0]
-    batch_num = 5000
+    batch_num = 200
     dummy_test_img = test_img.flatten()
     dummy_test_img_num = len(dummy_test_img)
     random_ids = [np.random.randint(0, dummy_test_img_num) for i in range(
         int(1 / 4 * dummy_test_img_num))]  # 1/4をd%に合わせてd/100とする
     for i in random_ids:
         dummy_test_img[i] = np.random.random()
-    eta = 0.1
+    eta = 0.01
     err_list = []
     train_accuracy_list = []
     test_accuracy_list = []
     dummy_accuracy_list = []
     for e in range(len(epoch)):
-        for i in range(1000):
-            print(i)
+        for i in range(2000):
             # iter_per_epoch = max(train_num / batch_num, 1)
             batch_id = np.random.choice(train_num, batch_num)
             train_batch = train_img[batch_id]
@@ -52,11 +54,12 @@ def main():
             # 順伝播を計算
             y = predict(train_batch, net)
             # errorの記録
-            error_s = square_error(y, answer_batch)
-            print(error_s)
+            #error_s = square_error(y, answer_batch)
             error_c = cross_error(y, answer_batch)
-            print(error_c)
             err_list.append(error_c)
+            if i % 100 == 0:
+                print(i)
+            print(error_c)
 
             # 誤差逆で勾配
             bpropf, net = back_prop(y, answer_batch, net)
@@ -65,7 +68,7 @@ def main():
         # 認識精度
         train_accuracy = accuracy_rate(y, answer_batch)
         #print("訓練データに対する正解率", train_accuracy)
-        print(train_accuracy)
+        print("train", train_accuracy)
         train_accuracy_list = train_accuracy_list.append(train_accuracy)
 
         # テストデータの正解率
@@ -77,6 +80,7 @@ def main():
 
         # dummyでの性能
         dummy_prediction = predict(dummy_test_img, net)
+        dummy_test_img = dummy_test_img.reshape(-1, 1, 28, 28)
         dummy_accuracy = accuracy_rate(dummy_prediction, test_label)
         print("dummy", dummy_accuracy)
         dummy_accuracy_list.append(dummy_accuracy)

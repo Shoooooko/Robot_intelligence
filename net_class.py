@@ -81,8 +81,8 @@ class ConvNet:
         filter_pad = conv_param['pad']
         filter_stride = conv_param['stride']
         input_size = input_dim[1]
-        #conv_out_size = []
-        #pool_out_size = []
+        # conv_out_size = []
+        # pool_out_size = []
         conv_out_size = [(input_size - filter_size + 2 *
                           filter_pad) / filter_stride + 1]  # 28->24 形状は28*28*1->24*24*16
         pool_out_size = [int(
@@ -96,15 +96,17 @@ class ConvNet:
         self.params = {}
         # 標準正規分布によるmatrix(out_channel:filter_num, input_channel,hight, width)
         self.params['w1'] = np.random.normal(
-            0, initial_weight, [filter_num, input_dim[0], filter_size, filter_size])
+            0, np.sqrt(2.0/(input_size**2)),
+            [filter_num, input_dim[0], filter_size, filter_size])
         self.params['w2'] = np.random.normal(
-            0, initial_weight, [filter_num, filter_num, filter_size, filter_size])
+            0, np.sqrt(2.0/pool_out_size[0]),
+            [filter_num, filter_num, filter_size, filter_size])
         self.params['w3'] = np.random.normal(
-            0, initial_weight, [pool_out_size[1], hidden_num_list[0]])
+            0, np.sqrt(2.0/pool_out_size[1]), [pool_out_size[1], hidden_num_list[0]])
         self.params['w4'] = np.random.normal(
-            0, initial_weight, [hidden_num_list[0], hidden_num_list[1]])
+            0, np.sqrt(2.0/hidden_num_list[0]), [hidden_num_list[0], hidden_num_list[1]])
         self.params['w5'] = np.random.normal(
-            0, initial_weight, [hidden_num_list[1], out_num])
+            0, np.sqrt(2.0/hidden_num_list[1]), [hidden_num_list[1], out_num])
         self.params['b1'] = np.zeros(filter_num)
         self.params['b2'] = np.zeros(filter_num)
         self.params['b3'] = np.zeros(hidden_num_list[0])
@@ -129,69 +131,3 @@ class ConvNet:
         self.layers['linear3'] = linear(self.params['w5'], self.params['b5'])
 
         self.final_layer = softmax()
-
-    # # 認識精度を求める
-
-    # def accuracy(self, x, t, batch_size=100):
-    #     if t.ndim != 1:
-    #         t = np.argmax(t, axis=1)
-
-    #     acc = 0.0
-
-    #     for i in range(int(x.shape[0] / batch_size)):
-    #         tx = x[i*batch_size:(i+1)*batch_size]
-    #         tt = t[i*batch_size:(i+1)*batch_size]
-    #         y = self.predict(tx)
-    #         y = np.argmax(y, axis=1)
-    #         acc += np.sum(y == tt)
-
-    #     return acc / x.shape[0]
-
-    # # 重みパラメータに対する勾配を求める(誤差逆伝搬法)
-    # # x:入力データ, t:教師データ
-    # def gradient(self, x, t):
-    #     """
-    #     Returns
-    #     -------
-    #     各層の勾配を持ったディクショナリ変数
-    #         grads['W1']、grads['W2']、...は各層の重み
-    #         grads['b1']、grads['b2']、...は各層のバイアス
-    #     """
-    #     # forward(順伝播)
-    #     self.loss(x, t)
-
-    #     # backward(逆伝播)
-    #     dout = 1
-    #     dout = self.last_layer.backward(dout)
-
-    #     layers = list(self.layers.values())
-    #     layers.reverse()
-    #     for layer in layers:
-    #         dout = layer.backward(dout)
-
-    #     # 求められた勾配値を設定
-    #     grads = {}
-    #     grads['W1'], grads['b1'] = self.layers['Conv1'].dW, self.layers['Conv1'].db
-    #     grads['W2'], grads['b2'] = self.layers['Affine1'].dW, self.layers['Affine1'].db
-    #     grads['W3'], grads['b3'] = self.layers['Affine2'].dW, self.layers['Affine2'].db
-
-    #     return grads
-
-    # # パラメータ(重み、バイアス)をファイルに保存する
-    # def save_params(self, file_name="params.pkl"):
-    #     params = {}
-    #     for key, val in self.params.items():
-    #         params[key] = val
-    #     with open(file_name, 'wb') as f:
-    #         pickle.dump(params, f)
-
-    # # ファイルからパラメータ(重み、バイアス)をロードする
-    # def load_params(self, file_name="params.pkl"):
-    #     with open(file_name, 'rb') as f:
-    #         params = pickle.load(f)
-    #     for key, val in params.items():
-    #         self.params[key] = val
-
-    #     for i, key in enumerate(['Conv1', 'Affine1', 'Affine2']):
-    #         self.layers[key].W = self.params['W' + str(i+1)]
-    #         self.layers[key].b = self.params['b' + str(i+1)]
