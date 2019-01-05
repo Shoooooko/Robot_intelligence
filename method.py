@@ -22,22 +22,22 @@ def back_prop(i, t, net, decay_param=0.1):
     eta = 0.1
     grads = {}
     dy = net.final_layer.backward(t)
-    # print('dy')
-    # print(dy)
     back_layers = list(net.layers.values())
     back_layers.reverse()
-    linear_num = 1
+    linear_num = 5
     weight_decay = 0
     for layer in back_layers:
         dy = layer.backward(dy)
         if layer in (net.layers['linear1'], net.layers['linear2'], net.layers['linear3'], net.layers['conv1'], net.layers['conv2']):
               # wx+bの場合は隠れ関数の教会なのでW,Bの勾配を求める
+            weight_decay = 0.5 * decay_param * np.sum(layer.W ** 2)
+            layer.dW += weight_decay
             grads['w' + str(linear_num)] = layer.dW
             grads['b' + str(linear_num)] = layer.dB
-            weight_decay = 0.5 * decay_param * np.sum(layer.W ** 2)
-            layer.W -= eta*layer.dW + weight_decay
+            layer.W = layer.W-eta*layer.dW - eta*decay_param * layer.W
             layer.B -= eta * layer.dB  # バッチ数でわる
-            linear_num += 1
+            linear_num -= 1
+
     return grads, net
 
 
@@ -56,19 +56,14 @@ def cross_error(i, t):
         i = i.reshape(1, i.size)
     # 教師データがone-hot-の場合、正解ラベルのインデックスに変換
     if t.size == i.size:
-        batch_num = i.shape[0]
+        t = t.argmax(axis=1)
+    #batch_num = i.shape[0]
+    batch_num = 5000
     return - np.sum(np.log(i[np.arange(batch_num), t] + 1e-7)) / batch_num
 
 
 def square_error(i, t):
     return 1 / 2 * np.sum((i - t) ** 2)
-
-    '''weight_decay = 0
-        for i in range(1, self.hidden_layer_num + 2):
-            W = self.params['W' + str(i)]
-            weight_decay += 0.5 * self.weight_decay_lambda * np.sum(W ** 2)
-
-        return self.last_layer.forward(y, t) + weight_decay'''
 
 
 def map_2d_forward(input_data, filter_h, filter_w, stride=1, pad=0):
@@ -88,13 +83,10 @@ def map_2d_forward(input_data, filter_h, filter_w, stride=1, pad=0):
         out_i = i + stride*out_h
         for l in range(filter_w):
             out_l = l + stride*out_w
-            # out_dataの形状に合わせてinput_data(高さ、幅部分)の値を挿入
+            # out_dataの形状に合わせてinput_data(高さ、幅部分)の値を挿入 次元を増やす
             out_data[:, :, i, l, :, :] = after_padding[:,
                                                        :, i: out_i: stride, l: out_l: stride]
     return out_data.transpose(0, 4, 5, 1, 2, 3).reshape(batch_num*out_h*out_w, -1)
-
-
-# col2imの実装
 
 
 def map_2d_back(map_out, input_shape, filter_h, filter_w, stride=1, pad=0):

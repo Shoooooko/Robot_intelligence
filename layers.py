@@ -124,6 +124,7 @@ class Convolution:
         # filterの個数:filter_num、チャネル数:C、高さ:filter_h、幅:filter_w
         filter_num, C, filter_h, filter_w = self.W.shape
         # input_dataの個数:N、チャネル数:C、高さ:H、幅:W                                                                                                                                N, C, filter_h, filter_w = self.W.shape
+        print(x.shape)
         N, C, in_h, in_w = x.shape
         # output_dataの高さ、幅
         out_h = int((in_h + 2*self.pad - filter_h) / self.stride)+1
@@ -150,12 +151,9 @@ class Convolution:
         # 元の4次元になおす
         self.dW = self.dW.transpose(1, 0).reshape(
             self.W.shape)  # conv1: (16,1,5,5),conv2: (16,16,5,5)
-        # .reshape(filter_num, C, filter_h, filter_w)
-
         dmap = np.dot(dout, self.map_W.T)
         d_x = map_2d_back(dmap, self.x.shape, filter_h,
                           filter_w, self.stride, self.pad)
-
         return d_x
 
 

@@ -14,12 +14,8 @@ from net_class import ConvNet
 import numpy as np
 import matplotlib.pylab as plt
 
-# ダミーデータ作成
-# train = np.random.rand(100, 784, 10, 10)
-
 
 def read_data():
-    print("data")
     train_img, train_label, test_img, test_label = load_data(
         flatten=False, normalize=True, one_label=True)
     return train_img, train_label, test_img, test_label
@@ -31,97 +27,71 @@ def main():
                   conv_param={'filter_num': 16,
                               'filter_size': 5, 'pad': 0, 'stride': 1},
                   hidden_num_list=[100, 100], out_num=10)
+    epoch = np.arange(10)
     iterations = 10000
     train_num = train_img.shape[0]
     batch_num = 5000
-    dammy_test_img = test_img.flatten()
-    dammy_test_img_num = len(dammy_test_img)
-    random_ids = [np.random.randint(0, dammy_test_img_num) for i in range(
-        int(1/4*dammy_test_img_num))]  # 1/4をd%に合わせてd/100とする
+    dummy_test_img = test_img.flatten()
+    dummy_test_img_num = len(dummy_test_img)
+    random_ids = [np.random.randint(0, dummy_test_img_num) for i in range(
+        int(1 / 4 * dummy_test_img_num))]  # 1/4をd%に合わせてd/100とする
     for i in random_ids:
-        dammy_test_img[i] = np.random.random()
+        dummy_test_img[i] = np.random.random()
     eta = 0.1
     err_list = []
-    accuracy_list = []
-    # sgeneralization_list = []
-    for i in range(100):
-        # iter_per_epoch = max(train_num / batch_num, 1)
-        batch_id = np.random.choice(train_num, batch_num)
-        train_batch = train_img[batch_id]
-        answer_batch = train_label[batch_id]
-        # 順伝播を計算
-        y = predict(train_batch, net)
-        print("predicted!")
+    train_accuracy_list = []
+    test_accuracy_list = []
+    dummy_accuracy_list = []
+    for e in range(len(epoch)):
+        for i in range(1000):
+            print(i)
+            # iter_per_epoch = max(train_num / batch_num, 1)
+            batch_id = np.random.choice(train_num, batch_num)
+            train_batch = train_img[batch_id]
+            answer_batch = train_label[batch_id]
+            # 順伝播を計算
+            y = predict(train_batch, net)
+            # errorの記録
+            error_s = square_error(y, answer_batch)
+            print(error_s)
+            error_c = cross_error(y, answer_batch)
+            print(error_c)
+            err_list.append(error_c)
 
-        # errorの記録
-        error = square_error(y, answer_batch)
-        # error = cross_error(y, answer_batch)
-        err_list.append(error)
-
-        # 誤差逆で勾配
-        bpropf, net = back_prop(y, answer_batch, net)
-        net.params = update_params(bpropf, net.params, eta)
+            # 誤差逆で勾配
+            bpropf, net = back_prop(y, answer_batch, net)
+            net.params = update_params(bpropf, net.params, eta)
 
         # 認識精度
         train_accuracy = accuracy_rate(y, answer_batch)
-        print("訓練データに対する正解率", train_accuracy)
-        # accuracy_list = accuracy_list.append(accuracy)
+        #print("訓練データに対する正解率", train_accuracy)
+        print(train_accuracy)
+        train_accuracy_list = train_accuracy_list.append(train_accuracy)
 
-    # テストデータの正解率
-    # correct_list = []
-    data_prediction = predict(test_img, net)
-    test_accuracy = accuracy_rate(data_prediction, test_label)
-    print("testに対する正解率", test_accuracy)
+        # テストデータの正解率
+        # correct_list = []
+        data_prediction = predict(test_img, net)
+        test_accuracy = accuracy_rate(data_prediction, test_label)
+        print("test", test_accuracy)
+        test_accuracy_list.append(test_accuracy)
 
-    # dummyでの性能
-    dummy_prediction = predict(dammy_test_img, net)
-    dummy_accuracy = accuracy_rate(dummy_prediction, test_label)
-    print("testに対する正解率", dummy_accuracy)
+        # dummyでの性能
+        dummy_prediction = predict(dummy_test_img, net)
+        dummy_accuracy = accuracy_rate(dummy_prediction, test_label)
+        print("dummy", dummy_accuracy)
+        dummy_accuracy_list.append(dummy_accuracy)
 
-    x = np.arange(100)
-    plt.plot(x, err_list)
+        if(train_accuracy > 0.95) and (test_accuracy > 0.95):
+            exit
+
+    plt.plot(epoch, train_accuracy_list)
+    plt.plot(epoch, test_accuracy_list)
+    plt.plot(epoch, dummy_accuracy_list)
     # plt.ylim(0, 1.0)
     plt.xlabel('epoch')
-    plt.ylabel('error')
+    plt.ylabel('accuracy')
     plt.show()
 
 
 if __name__ == '__main__':
     main()
-
-    # 認識精度
-    accuracy = accuracy_rate(y, answer_batch)
-    print("訓練データに対する正解率", accuracy)
-    accuracy_list = accuracy_list.append(accuracy)
-
-    # # 重みパラメータに対する勾配を求める(誤差逆伝搬法)
-    # # x:入力データ, t:教師データ
-    # def gradient(self, x, t):
-    #     """
-    #     Returns
-    #     -------
-    #     各層の勾配を持ったディクショナリ変数
-    #         grads['W1']、grads['W2']、...は各層の重み
-    #         grads['b1']、grads['b2']、...は各層のバイアス
-    #     """
-    #     # forward(順伝播)
-    #     self.loss(x, t)
-
-    # # パラメータ(重み、バイアス)をファイルに保存する
-    # def save_params(self, file_name="params.pkl"):
-    #     params = {}
-    #     for key, val in self.params.items():
-    #         params[key] = val
-    #     with open(file_name, 'wb') as f:
-    #         pickle.dump(params, f)
-
-    # # ファイルからパラメータ(重み、バイアス)をロードする
-    # def load_params(self, file_name="params.pkl"):
-    #     with open(file_name, 'rb') as f:
-    #         params = pickle.load(f)
-    #     for key, val in params.items():
-    #         self.params[key] = val
-
-    #     for i, key in enumerate(['Conv1', 'Affine1', 'Affine2']):
-    #         self.layers[key].W = self.params['W' + str(i+1)]
-    #         self.layers[key].b = self.params['b' + str(i+1)]
