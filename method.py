@@ -18,26 +18,23 @@ def accuracy_rate(u, t):
     return accuracy
 
 
-def back_prop(i, t, net, decay_param=0.1):
-    eta = 0.1
+def back_prop(i, t, net):
+    decay_param = 0.000001
+    eta = 0.01
     grads = {}
     dy = net.final_layer.backward(t)
     back_layers = list(net.layers.values())
     back_layers.reverse()
     linear_num = 5
-    weight_decay = 0
     for layer in back_layers:
         dy = layer.backward(dy)
         if layer in (net.layers['linear1'], net.layers['linear2'], net.layers['linear3'], net.layers['conv1'], net.layers['conv2']):
               # wx+bの場合は隠れ関数の教会なのでW,Bの勾配を求める
-            weight_decay = 0.5 * decay_param * np.sum(layer.W ** 2)
-            print(layer.W)
-            print(layer)
-            layer.dW += weight_decay
-            grads['w' + str(linear_num)] = layer.dW
+            # print(layer.W)
+            grads['w' + str(linear_num)] = layer.dW+decay_param * layer.W
             grads['b' + str(linear_num)] = layer.dB
-            layer.W = layer.W-eta*layer.dW - eta*decay_param * layer.W
-            layer.B -= eta * layer.dB  # バッチ数でわる
+            #layer.W = layer.W-eta*layer.dW - eta*decay_param * layer.W
+            # layer.B -= eta * layer.dB  # バッチ数でわる
             linear_num -= 1
 
     return grads, net
@@ -52,7 +49,7 @@ def update_params(gradient, params, eta):
     return params
 
 
-def cross_error(i, t):
+def cross_error(i, t, params, decay_param=0.000001):
     if i.ndim == 1:  # 行列全部でなくて.data１つあたりの誤差
         t = t.reshape(1, t.size)
         i = i.reshape(1, i.size)
@@ -60,7 +57,11 @@ def cross_error(i, t):
     if t.size == i.size:
         t = t.argmax(axis=1)
     batch_num = i.shape[0]
-    return - np.sum(np.log(i[np.arange(batch_num), t] + 1e-7)) / batch_num
+    weight_decay = 0
+    W_sum = np.sum(params['w1']**2)+np.sum(params['w2']**2) + \
+        np.sum(params['w3']**2)+np.sum(params['w4']**2)+np.sum(params['w5']**2)
+    weight_decay += 0.5 * decay_param * W_sum
+    return - np.sum(np.log(i[np.arange(batch_num), t] + 1e-7)) / batch_num+weight_decay
 
 
 def square_error(i, t):

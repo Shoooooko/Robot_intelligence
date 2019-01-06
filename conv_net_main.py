@@ -28,12 +28,14 @@ def main():
                               'filter_size': 5, 'pad': 0, 'stride': 1},
                   hidden_num_list=[100, 100], out_num=10)
     epoch = np.arange(10)
-    iterations = 10000
+    #iterations = 10000
     #######
     train_img = train_img[:5000]
     train_label = train_label[:5000]
+    test_img = test_img[:1000]
+    test_label = test_label[:1000]
     train_num = train_img.shape[0]
-    batch_num = 200
+    batch_num = 500
     dummy_test_img = test_img.flatten()
     dummy_test_img_num = len(dummy_test_img)
     random_ids = [np.random.randint(0, dummy_test_img_num) for i in range(
@@ -42,11 +44,11 @@ def main():
         dummy_test_img[i] = np.random.random()
     eta = 0.01
     err_list = []
-    train_accuracy_list = []
-    test_accuracy_list = []
-    dummy_accuracy_list = []
+    train_accuracy_list = [0]
+    test_accuracy_list = [0]
+    dummy_accuracy_list = [0]
     for e in range(len(epoch)):
-        for i in range(2000):
+        for i in range(3000):
             # iter_per_epoch = max(train_num / batch_num, 1)
             batch_id = np.random.choice(train_num, batch_num)
             train_batch = train_img[batch_id]
@@ -54,13 +56,13 @@ def main():
             # 順伝播を計算
             y = predict(train_batch, net)
             # errorの記録
-            #error_s = square_error(y, answer_batch)
-            error_c = cross_error(y, answer_batch)
+            error_s = square_error(y, answer_batch)
+            error_c = cross_error(y, answer_batch, net.params)
             err_list.append(error_c)
             if i % 100 == 0:
                 print(i)
-            print(error_c)
-
+                print(error_c)
+                print(error_s)
             # 誤差逆で勾配
             bpropf, net = back_prop(y, answer_batch, net)
             net.params = update_params(bpropf, net.params, eta)
@@ -79,6 +81,7 @@ def main():
         test_accuracy_list.append(test_accuracy)
 
         # dummyでの性能
+        dummy_test_img = dummy_test_img.reshape(-1, 1, 28, 28)
         dummy_prediction = predict(dummy_test_img, net)
         dummy_test_img = dummy_test_img.reshape(-1, 1, 28, 28)
         dummy_accuracy = accuracy_rate(dummy_prediction, test_label)
