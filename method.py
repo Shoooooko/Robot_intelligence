@@ -31,6 +31,8 @@ def back_prop(i, t, net, decay_param=0.1):
         if layer in (net.layers['linear1'], net.layers['linear2'], net.layers['linear3'], net.layers['conv1'], net.layers['conv2']):
               # wx+bの場合は隠れ関数の教会なのでW,Bの勾配を求める
             weight_decay = 0.5 * decay_param * np.sum(layer.W ** 2)
+            print(layer.W)
+            print(layer)
             layer.dW += weight_decay
             grads['w' + str(linear_num)] = layer.dW
             grads['b' + str(linear_num)] = layer.dB

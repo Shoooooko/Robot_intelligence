@@ -96,10 +96,11 @@ class ConvNet:
         self.params = {}
         # 標準正規分布によるmatrix(out_channel:filter_num, input_channel,hight, width)
         self.params['w1'] = np.random.normal(
-            0, np.sqrt(2.0/(input_size**2)),
+            0, np.sqrt(
+                2.0/(28*28)),
             [filter_num, input_dim[0], filter_size, filter_size])
         self.params['w2'] = np.random.normal(
-            0, np.sqrt(2.0/pool_out_size[0]),
+            0, np.sqrt(2.0/(24*24)),
             [filter_num, filter_num, filter_size, filter_size])
         self.params['w3'] = np.random.normal(
             0, np.sqrt(2.0/pool_out_size[1]), [pool_out_size[1], hidden_num_list[0]])
