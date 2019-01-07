@@ -99,7 +99,6 @@ class softmax:
             du_x = self.y.copy()
             du_x[np.arange(batch_num), t] -= 1
             du_x = du_x / batch_num
-
         return du_x
 
 

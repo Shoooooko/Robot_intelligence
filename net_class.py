@@ -41,48 +41,30 @@ class multiLayerNet:
         self.layers['linear4'] = linear(self.params['w4'], self.params['b4'])
         self.final_layer = soft1
 
+#conv - relu - pool - conv - relu - pool - linear - relu - linear - relu - linear - softmax
+
 
 class ConvNet:
-    """単純なConvNet
-
-    conv - relu - pool - affine - relu - affine - softmax
-
-    Parameters
-    ----------
-    input_size : 入力サイズ
-    hidden_size_list : 隠れ層のニューロンの数のリスト（e.g. [100, 100, 100]）
-    output_size : 出力サイズ
-    activation : 活性化関数を指定 'relu' or 'sigmoid'
-    weight_init_std : 重みの標準偏差を指定（e.g. 0.01）
-        'relu'または'he'を指定した場合は「Heの初期値」を設定
-        'sigmoid'または'xavier'を指定した場合は「Xavierの初期値」を設定
+    """
+    パラメータ, 初期化
+    input_dim : 入力サイズ(チャンネル、高さ、幅)
+    conv_param: filterの設定
+    hidden_num_list : 隠れ層(全結合)のニューロンの数のリスト
+    output_num : 出力ニューロン数
+    活性化関数は 'relu'=>重みは「Heの初期値」を用いる
     """
 
-    # 初期化
     def __init__(self, initial_weight, input_dim=(1, 28, 28),
                  conv_param={'filter_num': 16,
                              'filter_size': 5, 'pad': 0, 'stride': 1},
                  hidden_num_list=[100, 100], out_num=10):
-        """
-        input_dim : 入力データの次元(チャンネル、高さ、幅)
-        conv_param : Convolution層のハイパーパラメーターディクショナリ
-            - filter_num : フィルターの数
-            - filter_size : フィルターのサイズ
-            - pad : パディング
-            - stride : ストライド
-        hidden_size : 隠れ層(全結合)のニューロンの数
-        output_size : 出力層(全結合)のニューロンの数
-        initial_weight : 初期化の際の重みの標準偏差
-        """
-
-        # Convolution層のハイパーパラメーターをセット
+        # Convolution層設定
         filter_num = conv_param['filter_num']
         filter_size = conv_param['filter_size']
         filter_pad = conv_param['pad']
         filter_stride = conv_param['stride']
         input_size = input_dim[1]
-        # conv_out_size = []
-        # pool_out_size = []
+        # 畳み込みのデータサイズの設定
         conv_out_size = [(input_size - filter_size + 2 *
                           filter_pad) / filter_stride + 1]  # 28->24 形状は28*28*1->24*24*16
         pool_out_size = [int(
@@ -92,9 +74,8 @@ class ConvNet:
         pool_out_size.append(int(
             filter_num * (conv_out_size[1] / 2) * (conv_out_size[1] / 2)))  # 4*4*16
 
-        # 重み、バイアスの初期化
+        # 重み(Heの初期値)の初期化
         self.params = {}
-        # 標準正規分布によるmatrix(out_channel:filter_num, input_channel,hight, width)
         self.params['w1'] = np.random.normal(
             0, np.sqrt(
                 2.0/(28*28)),
@@ -107,7 +88,8 @@ class ConvNet:
         self.params['w4'] = np.random.normal(
             0, np.sqrt(2.0/hidden_num_list[0]), [hidden_num_list[0], hidden_num_list[1]])
         self.params['w5'] = np.random.normal(
-            0, np.sqrt(2.0/hidden_num_list[1]), [hidden_num_list[1], out_num])
+            0, np.sqrt(2.0 / hidden_num_list[1]), [hidden_num_list[1], out_num])
+        # バイアスの初期化
         self.params['b1'] = np.zeros(filter_num)
         self.params['b2'] = np.zeros(filter_num)
         self.params['b3'] = np.zeros(hidden_num_list[0])
