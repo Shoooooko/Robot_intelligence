@@ -36,10 +36,10 @@ def main():
     # 学習回数
     iterations = []
     # データを減らして学習させる場合
-    # train_img = train_img[:5000]
-    # train_label = train_label[:5000]
-    # test_img = test_img[:1000]
-    # test_label = test_label[:1000]
+    train_img = train_img[:5000]
+    train_label = train_label[:5000]
+    test_img = test_img[:5000]
+    test_label = test_label[:5000]
     train_num = train_img.shape[0]
     # バッチ数
     batch_num = 5000
@@ -65,7 +65,7 @@ def main():
             noise_train_img[i] = np.random.random()
             # 入力データをの形状をもとに戻す
         noise_train_img = noise_train_img.reshape(-1, 1, 28, 28)
-        for i in range(1):
+        for i in range(1000):
             # バッチ数分だけ訓練データからランダムにバッチデータのindex選ぶ
             batch_id = np.random.choice(train_num, batch_num)
             # バッチindexに対応する学習データとラベル取得
