@@ -32,7 +32,7 @@ def main():
                               'filter_size': 5, 'pad': 0, 'stride': 1},
                   hidden_num_list=[100, 100], out_num=10)
     # 10epochを最大とする
-    epoch = np.arange(10)
+    epoch = np.arange(1)
     # 学習回数
     iterations = []
     # データを減らして学習させる場合
@@ -50,14 +50,26 @@ def main():
     # 正解率
     train_accuracy_list = []
     test_accuracy_list = []
-    dummy_accuracy_list = []
-
-    for e in range(len(epoch)):
-        for i in range(1000):
+    noise_train_accuracy = []
+    noise_test_accuracy = []
+    noise_train_img = train_img.flatten()
+    noise_train_img_num = len(noise_train_img)
+    noise_rate = [0, 5, 10, 15, 20, 25]
+    # noise_rate dを0~25%まで変化, noise_rate分だけ画素値をランダムに0~1の小数点に変更
+    for d in noise_rate:
+        # テストデータを一次元にする
+        noise_train_img = train_img.flatten()
+        random_ids = [np.random.randint(0, noise_train_img_num) for i in range(
+            int(d/(100) * noise_train_img_num))]  # d/100のnoiseとする
+        for i in random_ids:
+            noise_train_img[i] = np.random.random()
+            # 入力データをの形状をもとに戻す
+        noise_train_img = noise_train_img.reshape(-1, 1, 28, 28)
+        for i in range(1):
             # バッチ数分だけ訓練データからランダムにバッチデータのindex選ぶ
             batch_id = np.random.choice(train_num, batch_num)
             # バッチindexに対応する学習データとラベル取得
-            train_batch = train_img[batch_id]
+            train_batch = noise_train_img[batch_id]
             answer_batch = train_label[batch_id]
             # 順伝播
             y = predict(train_batch, net)
@@ -71,7 +83,7 @@ def main():
             # パラメータの更新
             net.params = update_params(bpropf, net.params, eta)
             # 正解率：10iterationsごとに訓練データと学習データに対して求める
-            if i % 10 == 0:
+            if i % 1 == 0:
                 iterations.append(i)
                 # 訓練データ
                 train_accuracy = accuracy_rate(y, answer_batch)
@@ -80,12 +92,11 @@ def main():
                 # テストデータ
                 test_accuracy = accuracy_rate(data_prediction, test_label)
                 test_accuracy_list.append(test_accuracy)
-
-        print("訓練データに対する正解率", train_accuracy)
-        #print("train", train_accuracy)
-
-        print("テストデータに対する正解率", test_accuracy)
-        # test_accuracy_list.append(test_accuracy)
+            print("noise", d, "%")
+            print("訓練データに対する正解率", train_accuracy)
+            noise_train_accuracy.append(train_accuracy)
+            print("テストデータに対する正解率", test_accuracy)
+            noise_test_accuracy.append(test_accuracy)
 
         plt.plot(iterations, train_accuracy_list, 'o-', label='train')
         plt.plot(iterations, test_accuracy_list, 'o-', label='test')
@@ -94,30 +105,6 @@ def main():
         plt.xlabel('iterations')
         plt.ylabel('accuracy')
         plt.legend(loc='best')
-        plt.show()
-        # 正解率が訓練/テストデータともに0.95を超えているかチェック
-        if(train_accuracy > 0.95) and (test_accuracy > 0.95):
-            print("yes")
-        # テストデータを一次元にする
-        dummy_test_img = test_img.flatten()
-        dummy_test_img_num = len(dummy_test_img)
-        dummy_rate = []
-        # dummyの率dを0~25%まで変化, dummy分だけ画素値をランダムに0~1の小数点に変更
-        for d in range(26):
-            dummy_test_img = test_img.flatten()
-            dummy_rate.append(d)
-            random_ids = [np.random.randint(0, dummy_test_img_num) for i in range(
-                int(d/(100) * dummy_test_img_num))]  # d/100のダミーとする
-            for i in random_ids:
-                dummy_test_img[i] = np.random.random()
-            # 入力データをの形状をもとに戻す
-            dummy_test_img = dummy_test_img.reshape(-1, 1, 28, 28)
-            dummy_prediction = predict(dummy_test_img, net)
-            # ダミーデータについても予測正解率を求める
-            dummy_accuracy = accuracy_rate(dummy_prediction, test_label)
-            print("ダミーデータに対する正解率", dummy_accuracy)
-            dummy_accuracy_list.append(dummy_accuracy)
-        plt.plot(dummy_rate, dummy_accuracy_list)
         plt.show()
 
 
