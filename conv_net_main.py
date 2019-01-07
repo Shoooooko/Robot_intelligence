@@ -3,7 +3,7 @@
 # https: // qiita.com/nvtomo1029/items/601af18f82d8ffab551e
 # https://qiita.com/ta-ka/items/1c588dd0559d1aad9921
 # https://qiita.com/icoxfog417/items/5fd55fad152231d706c2
-# https://qiita.com/yakof11/items/7c27ae617651e76f03ca
+
 import sys
 # sys.path.append(os.pardir)
 import os
@@ -99,6 +99,7 @@ def main():
         if(train_accuracy > 0.95) and (test_accuracy > 0.95):
             print("yes")
         # テストデータを一次元にする
+        dummy_test_img = test_img.flatten()
         dummy_test_img_num = len(dummy_test_img)
         dummy_rate = []
         # dummyの率dを0~25%まで変化, dummy分だけ画素値をランダムに0~1の小数点に変更
