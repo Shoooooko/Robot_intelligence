@@ -36,11 +36,11 @@ def main():
     # 学習回数
     iterations = []
     # データを減らして学習させる場合
-    train_img = train_img[:5000]
-    train_label = train_label[:5000]
-    test_img = test_img[:5000]
-    test_label = test_label[:5000]
-    train_num = train_img.shape[0]
+    # train_img = train_img[:10000]
+    # train_label = train_label[:10000]
+    # test_img = test_img[:5000]
+    # test_label = test_label[:5000]
+    # train_num = train_img.shape[0]
     # バッチ数
     batch_num = 5000
     # 学習係数η
@@ -65,7 +65,7 @@ def main():
             noise_train_img[i] = np.random.random()
             # 入力データをの形状をもとに戻す
         noise_train_img = noise_train_img.reshape(-1, 1, 28, 28)
-        for i in range(1000):
+        for i in range(500):
             # バッチ数分だけ訓練データからランダムにバッチデータのindex選ぶ
             batch_id = np.random.choice(train_num, batch_num)
             # バッチindexに対応する学習データとラベル取得
@@ -92,11 +92,11 @@ def main():
                 # テストデータ
                 test_accuracy = accuracy_rate(data_prediction, test_label)
                 test_accuracy_list.append(test_accuracy)
-            print("noise", d, "%")
-            print("訓練データに対する正解率", train_accuracy)
-            noise_train_accuracy.append(train_accuracy)
-            print("テストデータに対する正解率", test_accuracy)
-            noise_test_accuracy.append(test_accuracy)
+        print("noise", d, "%")
+        print("訓練データに対する正解率", train_accuracy)
+        noise_train_accuracy.append(train_accuracy)
+        print("テストデータに対する正解率", test_accuracy)
+        noise_test_accuracy.append(test_accuracy)
 
         plt.plot(iterations, train_accuracy_list, 'o-', label='train')
         plt.plot(iterations, test_accuracy_list, 'o-', label='test')
