@@ -40,7 +40,7 @@ def main():
     # train_label = train_label[:10000]
     # test_img = test_img[:5000]
     # test_label = test_label[:5000]
-    # train_num = train_img.shape[0]
+    train_num = train_img.shape[0]
     # バッチ数
     batch_num = 5000
     # 学習係数η
