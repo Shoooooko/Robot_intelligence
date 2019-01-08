@@ -67,7 +67,7 @@ def main():
         noise_train_img = noise_train_img.reshape(-1, 1, 28, 28)
         for i in range(500):
             # バッチ数分だけ訓練データからランダムにバッチデータのindex選ぶ
-            batch_id = np.random.choice(train_num, batch_num)
+            batch_id = np.random.choice(noise_train_img_num, batch_num)
             # バッチindexに対応する学習データとラベル取得
             train_batch = noise_train_img[batch_id]
             answer_batch = train_label[batch_id]
@@ -83,7 +83,7 @@ def main():
             # パラメータの更新
             net.params = update_params(bpropf, net.params, eta)
             # 正解率：10iterationsごとに訓練データと学習データに対して求める
-            if i % 1 == 0:
+            if i % 10 == 0:
                 iterations.append(i)
                 # 訓練データ
                 train_accuracy = accuracy_rate(y, answer_batch)
