@@ -98,8 +98,8 @@ def main():
         print("テストデータに対する正解率", test_accuracy)
         noise_test_accuracy.append(test_accuracy)
 
-        plt.plot(iterations, train_accuracy_list, 'o-', label='train')
-        plt.plot(iterations, test_accuracy_list, 'o-', label='test')
+        plt.plot(iterations, train_accuracy_list, label='train')
+        plt.plot(iterations, test_accuracy_list, label='test')
         #plt.plot(iterations, dummy_accuracy_list)
         # plt.ylim(0, 1.0)
         plt.xlabel('iterations')

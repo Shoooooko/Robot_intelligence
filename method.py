@@ -28,11 +28,13 @@ def back_prop(i, t, net):
     dy = net.final_layer.backward(t)
     back_layers = list(net.layers.values())
     back_layers.reverse()
-    linear_num = 5
+    #linear_num = 5
+    linear_num = 4
     for layer in back_layers:
         dy = layer.backward(dy)
         # 勾配更新
-        if layer in (net.layers['linear1'], net.layers['linear2'], net.layers['linear3'], net.layers['conv1'], net.layers['conv2']):
+        # if layer in (net.layers['linear1'], net.layers['linear2'], net.layers['linear3'], net.layers['conv1'], net.layers['conv2']):##CNN
+        if layer in (net.layers['linear1'], net.layers['linear2'], net.layers['linear3'], net.layers['linear4']):  # Multinet
             grads['w' + str(linear_num)] = layer.dW+decay_param * layer.W
             grads['b' + str(linear_num)] = layer.dB
             linear_num -= 1
@@ -58,8 +60,10 @@ def cross_error(i, t, params, decay_param=0.000001):
     batch_num = i.shape[0]
     # weight_decay
     weight_decay = 0
+    # W_sum = np.sum(params['w1']**2)+np.sum(params['w2']**2) + \
+    #np.sum(params['w3']** 2) + np.sum(params['w4']** 2) + np.sum(params['w5']** 2)
     W_sum = np.sum(params['w1']**2)+np.sum(params['w2']**2) + \
-        np.sum(params['w3']**2)+np.sum(params['w4']**2)+np.sum(params['w5']**2)
+        np.sum(params['w3']**2)+np.sum(params['w4']**2)
     weight_decay += 0.5 * decay_param * W_sum
     return - np.sum(np.log(i[np.arange(batch_num), t] + 1e-7)) / batch_num + weight_decay
 
