@@ -30,10 +30,9 @@ def main():
     err_list = []
     train_accuracy_list = []
     test_accuracy_list = []
-    net = multiLayerNet(input_num=784, hidden_num_list=[
-                        100, 100, 100], out_num=10, initial_weight=0.1)
-    # noise用
-    # noise 10% 入りtest_data
+
+    # noise_neuron
+    # noise 10% 入りtrain_dataとtest_data
     noise_test_accuracy_list = []
     noise_test_img = test_img.flatten()
     random_id = [np.random.randint(0, 78400)
@@ -42,16 +41,19 @@ def main():
     for i in random_id:
         noise_test_img[i] = np.random.random()
     noise_test_img = noise_test_img.reshape(-1, 784)
+
+    train_img = train_img.flatten()
+    random_ids = [np.random.randint(0, 78400*6)
+                  for i in range(int(10 * 78400 * 6))]  # d/100のnoiseとする
+    for i in random_ids:
+        train_img[i] = np.random.random()
+    train_img = train_img.reshape(-1, 784)
     ###
-    noise_rate = [0, 5, 10, 15, 20, 25]
+    hidden_neuron = [10, 50, 100, 150, 200]
     iterations = []
-    for d in noise_rate:
-        train_img = train_img.flatten()
-        random_ids = [np.random.randint(0, 78400*6)
-                      for i in range(int(d * 78400 * 6))]  # d/100のnoiseとする
-        for i in random_ids:
-            train_img[i] = np.random.random()
-        train_img = train_img.reshape(-1, 784)
+    for d in hidden_neuron:
+        net = multiLayerNet(input_num=784, hidden_num_list=[
+            d, d, d], out_num=10, initial_weight=0.1)
     ###
         for i in range(1000):
                 # iterations.append(i)
@@ -86,14 +88,14 @@ def main():
         noise_data_prediction = predict(noise_test_img, net)
         noise_test_accuracy = accuracy_rate(noise_data_prediction, test_label)
         noise_test_accuracy_list.append(noise_test_accuracy)
-        print(d, "%")
+        print(d)
         print("noise_testデータに対する正解率", noise_test_accuracy)
         print("trainデータに対する正解率", train_accuracy)
         print("testデータに対する正解率", test_accuracy)
 
-    plt.plot(noise_rate, train_accuracy_list, 'o-', label='train')
-    plt.plot(noise_rate, test_accuracy_list, 'o-', label='test')
-    plt.plot(noise_rate, noise_test_accuracy_list,
+    plt.plot(hidden_neuron, train_accuracy_list, 'o-', label='train')
+    plt.plot(hidden_neuron, test_accuracy_list, 'o-', label='test')
+    plt.plot(hidden_neuron, noise_test_accuracy_list,
              'o-', label='test with noise')
     plt.yticks(np.arange(0.8, 1.11, 0.01))
     plt.ylim(0.8, 1.0)
