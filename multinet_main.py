@@ -25,42 +25,41 @@ def main():
     # data = train_img[:30]
     # idata = data.reshape(28, 28)
     # img_show(idata)
-    batch_num = 6000
+    batch_num = 60000
     eta = 0.1
     err_list = []
     train_accuracy_list = []
     test_accuracy_list = []
+    net = multiLayerNet(input_num=784, hidden_num_list=[
+        100, 100, 100], out_num=10, initial_weight=0.1)
 
-    # noise_neuron
-    # noise 10% 入りtrain_dataとtest_data
+    # noise_size
+    # noise 10% 入りtest_data
     noise_test_accuracy_list = []
     noise_test_img = test_img.flatten()
     random_id = [np.random.randint(0, 78400)
                  for i in range(int(10 * 78400))]
-    # 訓練データへのノイズのrateを変化させてモデルの性能を調べる
     for i in random_id:
         noise_test_img[i] = np.random.random()
     noise_test_img = noise_test_img.reshape(-1, 784)
 
-    train_img = train_img.flatten()
-    random_ids = [np.random.randint(0, 78400*6)
-                  for i in range(int(10 * 78400 * 6))]  # d/100のnoiseとする
-    for i in random_ids:
-        train_img[i] = np.random.random()
-    train_img = train_img.reshape(-1, 784)
     ###
-    hidden_neuron = [10, 50, 100, 150, 200]
+    noise_date_size = [1000, 5000, 10000, 60000]
     iterations = []
-    for d in hidden_neuron:
-        net = multiLayerNet(input_num=784, hidden_num_list=[
-            d, d, d], out_num=10, initial_weight=0.1)
+    for d in noise_date_size:
+        noise_train_img = train_img[:d]
+        noise_train_label = train_label[:d]
+        noise_train_img = noise_train_img.flatten()
+        random_ids = [np.random.randint(0, 784*d)
+                      for i in range(int(0.1*784 * d))]  # d/100のnoiseとする
+        for i in random_ids:
+            noise_train_img[i] = np.random.random()
+        noise_train_img = noise_train_img.reshape(-1, 784)
+        train_num = noise_train_img.shape[0]
+        train_batch = noise_train_img
+        answer_batch = noise_train_label
     ###
         for i in range(1000):
-                # iterations.append(i)
-                # バッチ処理設定
-            batch_id = np.random.choice(train_num, batch_num)
-            train_batch = train_img[batch_id]
-            answer_batch = train_label[batch_id]
 
             # 4層の順伝播を計算
             y = predict(train_batch, net)
@@ -93,13 +92,13 @@ def main():
         print("trainデータに対する正解率", train_accuracy)
         print("testデータに対する正解率", test_accuracy)
 
-    plt.plot(hidden_neuron, train_accuracy_list, 'o-', label='train')
-    plt.plot(hidden_neuron, test_accuracy_list, 'o-', label='test')
-    plt.plot(hidden_neuron, noise_test_accuracy_list,
+    plt.plot(noise_date_size, train_accuracy_list, 'o-', label='train')
+    plt.plot(noise_date_size, test_accuracy_list, 'o-', label='test')
+    plt.plot(noise_date_size, noise_test_accuracy_list,
              'o-', label='test with noise')
     plt.yticks(np.arange(0.8, 1.11, 0.01))
     plt.ylim(0.8, 1.0)
-    plt.xlabel('noise_rate')
+    plt.xlabel('data_size')
     plt.ylabel('accuracy')
     plt.legend(loc='best')
     plt.show()
