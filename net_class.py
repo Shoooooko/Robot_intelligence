@@ -24,9 +24,7 @@ class multiLayerNet:
         self.params['b3'] = np.zeros(hidden_num_list[2])
         self.params['b4'] = np.zeros(out_num)
 
-        # layersの設定
-        # layers_list = {'relu1': relu(), 'relu2': relu(),
-        # 'relu3': relu(), 'sigmoid': sigmoid(), 'softmax': softmax()}
+        # レイヤの生成
         relu1 = relu()
         relu2 = relu()
         relu3 = relu()

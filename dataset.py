@@ -4,8 +4,6 @@ import pickle
 import os
 import numpy as np
 
-# data読み込みについて：https://qiita.com/python_walker/items/e4d2ae5b7196cb07402b
-# 4種類のdataをfileごとにkeyをつけて読み込む
 data_url = 'http://yann.lecun.com/exdb/mnist/'
 file_paths = {
     'train_img': 'train-images-idx3-ubyte.gz',
@@ -59,26 +57,22 @@ def _normalize(X):
     X = X.astype(np.float32)
     return X/(255.0)
 
+# one_hot_label型にする
+
 
 def to_simple_one_label(X):
-    #X.shape (60000,)<-train_label (10000,)<-test/label
     T = np.zeros((X.size, 10))
     for col, row in enumerate(T):
         row[X[col]] = 1
-    #T.shape (60000,10)<-train_label (10000,10)<-test/label
     return T
 
 
 def load_data(flatten, normalize=True, one_label=True):
     """
-    Parameters
-    ----------
     normalize : 画像のピクセル値を0.0~1.0に正規化する
-    one_hot_label :
-        one_hot_labelがTrueの場合、ラベルはone-hot配列として返す
-        one-hot配列とは、たとえば[0,0,1,0,0,0,0,0,0,0]のような配列
-    flatten : 画像を一次元配列に平にするかどうか
-    (訓練画像, 訓練ラベル), (テスト画像, テストラベル)"""
+    one_hot_label :Trueの場合、ラベルはone-hot配列として返す
+    flatten : 画像を一次元配列にするかどうか
+    """
     download(file_paths, data_url)
     dataset = setting_data()
     with open(save_file, 'wb') as f:
@@ -100,9 +94,6 @@ def load_data(flatten, normalize=True, one_label=True):
             dataset[key] = dataset[key].reshape(-1, 1, 28, 28)
     with open(save_file, 'wb') as f:
         pickle.dump(dataset, f, -1)  # 最も高いprotocolで保存
-    # 保存したfileを開く
-    '''with open(save_file, 'rb') as f:
-        dataset = pickle.load(f) '''
     return dataset['train_img'], dataset['train_label'], dataset['test_img'], dataset['test_label']
 
 

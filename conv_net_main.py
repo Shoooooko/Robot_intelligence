@@ -1,11 +1,4 @@
-# https://www.ibm.com/developerworks/jp/cognitive/library/cc-convolutional-neural-network-vision-recognition/index.html
-# https://qiita.com/nvtomo1029/items/601af18f82d8ffab551e
-# https: // qiita.com/nvtomo1029/items/601af18f82d8ffab551e
-# https://qiita.com/ta-ka/items/1c588dd0559d1aad9921
-# https://qiita.com/icoxfog417/items/5fd55fad152231d706c2
-
 import sys
-# sys.path.append(os.pardir)
 import os
 from dataset import load_data
 from layers import *
@@ -31,8 +24,6 @@ def main():
                   conv_param={'filter_num': 16,
                               'filter_size': 5, 'pad': 0, 'stride': 1},
                   hidden_num_list=[100, 100], out_num=10)
-    # 10epochを最大とする
-    epoch = np.arange(1)
     # 学習回数
     iterations = []
     # データを減らして学習させる場合
@@ -55,7 +46,7 @@ def main():
     noise_train_img = train_img.flatten()
     noise_train_img_num = len(noise_train_img)
     noise_rate = [0, 5, 10, 15, 20, 25]
-    # noise_rate dを0~25%まで変化, noise_rate分だけ画素値をランダムに0~1の小数点に変更
+    # noise_rate dを0~25%まで変化, noise_rate分だけ画素値をランダムに0~1の小数点に変更  #学習データでなく、テストデータにノイズ(レポートの実験とは別)
     for d in noise_rate:
         # テストデータを一次元にする
         noise_train_img = train_img.flatten()
@@ -65,7 +56,7 @@ def main():
             noise_train_img[i] = np.random.random()
             # 入力データをの形状をもとに戻す
         noise_train_img = noise_train_img.reshape(-1, 1, 28, 28)
-        for i in range(500):
+        for i in range(1000):
             # バッチ数分だけ訓練データからランダムにバッチデータのindex選ぶ
             batch_id = np.random.choice(noise_train_img_num, batch_num)
             # バッチindexに対応する学習データとラベル取得

@@ -28,8 +28,8 @@ def back_prop(i, t, net):
     dy = net.final_layer.backward(t)
     back_layers = list(net.layers.values())
     back_layers.reverse()
-    #linear_num = 5
-    linear_num = 4
+    # linear_num = 5 #CNN
+    linear_num = 4  # Multinet
     for layer in back_layers:
         dy = layer.backward(dy)
         # 勾配更新
@@ -47,7 +47,7 @@ def update_params(gradient, params, eta):
         params[param] -= eta * gradient[param]
     return params
 
-# 交叉エントロピー法
+# 交叉エントロピー誤差
 
 
 def cross_error(i, t, params, decay_param=0.000001):
@@ -61,9 +61,9 @@ def cross_error(i, t, params, decay_param=0.000001):
     # weight_decay
     weight_decay = 0
     # W_sum = np.sum(params['w1']**2)+np.sum(params['w2']**2) + \
-    #np.sum(params['w3']** 2) + np.sum(params['w4']** 2) + np.sum(params['w5']** 2)
+    # np.sum(params['w3']** 2) + np.sum(params['w4']** 2) + np.sum(params['w5']** 2) #CNN
     W_sum = np.sum(params['w1']**2)+np.sum(params['w2']**2) + \
-        np.sum(params['w3']**2)+np.sum(params['w4']**2)
+        np.sum(params['w3']**2)+np.sum(params['w4']**2)  # Multinet
     weight_decay += 0.5 * decay_param * W_sum
     return - np.sum(np.log(i[np.arange(batch_num), t] + 1e-7)) / batch_num + weight_decay
 
@@ -73,7 +73,7 @@ def cross_error(i, t, params, decay_param=0.000001):
 def square_error(i, t):
     return 1 / 2 * np.sum((i - t) ** 2)
 
-# 順伝播でデータを2次元に展開
+# 順伝播でデータを2次元に展開 CNN
 
 
 def map_2d_forward(input_data, filter_h, filter_w, stride=1, pad=0):
@@ -87,8 +87,6 @@ def map_2d_forward(input_data, filter_h, filter_w, stride=1, pad=0):
                                         (pad, pad), (pad, pad)], 'constant')
     # 出力データの初期化
     out_data = np.zeros((batch_num, depth, filter_h, filter_w, out_h, out_w))
-    # https://www.ibm.com/developerworks/jp/cognitive/librari/cc-convolutional-neural-network-vision-recognition/index.html
-    # numpyなしでは上記のリンクのようにfor文4回
     for i in range(filter_h):
         out_i = i + stride*out_h
         for l in range(filter_w):
@@ -100,22 +98,20 @@ def map_2d_forward(input_data, filter_h, filter_w, stride=1, pad=0):
 
 
 def map_2d_back(map_out, input_shape, filter_h, filter_w, stride=1, pad=0):
-    """
-    map_out : 出力データ(2次元配列)
-    input_shape : 入力データの形状（例：(10, 1, 28, 28)）
-    in_data : 入力データ
-    """
+    # map_out : 出力データ(2次元配列)
+    # input_shape : 誤差逆の際の入力データの形状(4次元)
+    # in_data : 入力データ
     N, C, in_h, in_w = input_shape
     out_h = (in_h + 2*pad - filter_h)//stride + 1
     out_w = (in_w + 2*pad - filter_w)//stride + 1
-    # map_outの形状をinput_dataの形状に戻す
+    # 順伝播での出力データの形状を入力データの形状に戻す
     map_out = map_out.reshape(
         N, out_h, out_w, C, filter_h, filter_w).transpose(0, 3, 4, 5, 1, 2)
 
-    # input_dataを初期化
+    # in_dataを初期化
     in_data = np.zeros((N, C, in_h + 2*pad + stride -
                         1, in_w + 2*pad + stride - 1))
-    # map_outの値をinput_dataに挿入
+    # map_outの値をin_dataに次元戻して挿入
     for i in range(filter_h):
         i_max = i + stride*out_h
         for l in range(filter_w):

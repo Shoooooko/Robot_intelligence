@@ -1,7 +1,3 @@
-# u=w*x
-# delta=deE/deu
-# del_u/del_w=x
-# w_new=w_old-eta*grad*xだがbackwordでは出力層からgradの連鎖を求める
 import numpy as np
 from method import *
 
@@ -18,7 +14,7 @@ class relu:
         return u
 
     def backward(self, du):
-        du[self.flag] = 0  # それ以外はduそのまま
+        du[self.flag] = 0
         du_x = du
         return du_x
 
@@ -26,8 +22,8 @@ class relu:
 class sigmoid:
     def __init__(self):
         self.u = None
+    # 順伝播予測+値の保持
 
-    # 順伝播予測+値のstore
     def forward(self, x):
         u = 1 / (1 + np.exp(-x))
         # forwardの処理を保存
@@ -54,18 +50,16 @@ class linear:
             x = x.reshape(-1, x.shape[1]*x.shape[2]*x.shape[3])
         u = np.dot(x, self.W) + self.B
         return u
-    # BP
-    # u=wx+b=>du_x,du_w,du_bを求める
 
     def backward(self, du):
-        eta = 0.01
+        eta = 0.1
         du_x = np.dot(du, self.W.T)
         self.dW = np.dot(self.x.T, du)
         if self.dW.ndim != 2:
             self.dW = self.dW.reshape(-1, self.dW.shape[-1])
         # Bはブロードキャストによって各行全てに影響をもつ、よってまとめる時は和をとる
         self.dB = np.sum(du, axis=0)
-        du_x = du_x.reshape(self.x.shape)  # (100.784)
+        du_x = du_x.reshape(self.x.shape)
         return du_x
 
 # 出力層に用いる-> 入力を正規化して出力->確率として扱える
@@ -93,27 +87,26 @@ class softmax:
         batch_num = t.shape[0]
         if t.size == self.y.size:  # 教師データがone-hot-vectorのとき
             du_x = (self.y - t) / batch_num
-            #print(du_x, end=" isc Y")
-            # データ一個あたりの誤差
         else:
             du_x = self.y.copy()
             du_x[np.arange(batch_num), t] -= 1
             du_x = du_x / batch_num
         return du_x
 
+# 畳み込み層
+
 
 class Convolution:
-
     def __init__(self, W, B, stride=1, pad=0):
         self.W = W
         self.B = B
         self.stride = stride
         self.pad = pad
 
-        # 中間データ（backward時に使用）
+        # backward時に使用
         self.x = None
-        self.map = None
-        self.map_W = None
+        self.map = None  # inputの展開データ
+        self.map_W = None  # 重みの展開データ
 
         # 重み・バイアスパラメータの勾配
         self.dW = None
@@ -153,6 +146,8 @@ class Convolution:
         d_x = map_2d_back(dmap, self.x.shape, filter_h,
                           filter_w, self.stride, self.pad)
         return d_x
+
+# プーリング層
 
 
 class Pooling:
